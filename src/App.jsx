@@ -12,25 +12,27 @@ function App() {
         bad: 0
     };
 
-    const [feedbackState, setFeedbackState, removeFeedbackState] = useLocalStorage('feedback-state', initialFeedback);
+    const [feedbackState, setFeedbackState] = useLocalStorage('feedback-state', initialFeedback);
 
     const updateFeedback = feedbackType => {
-        feedbackState[feedbackType] = feedbackState[feedbackType] + 1;
-        setFeedbackState(feedbackState);
-    }
+        setFeedbackState(prevState => ({
+            ...prevState,
+            [feedbackType]: prevState[feedbackType] + 1
+        }));
+    };
 
     const resetFeedback = () => {
         setFeedbackState(initialFeedback);
     }
 
     const totalFeedback = feedbackState.good + feedbackState.neutral + feedbackState.bad;
-    const positive = Math.round((feedbackState.good / totalFeedback) * 100);
+    const positive = totalFeedback > 0 ? Math.round((feedbackState.good / totalFeedback) * 100) : 0;
 
     return (
         <>
             <Description/>
             <Options updateFeedback={updateFeedback} totalFeedback={totalFeedback} resetFeedback={resetFeedback}/>
-            {totalFeedback > 0 && <Feedback state={feedbackState} positive={positive} />}
+            {totalFeedback > 0 && <Feedback state={feedbackState} positive={positive} totalFeedback={totalFeedback} />}
             {totalFeedback <= 0 && <Notification/>}
         </>
     )
